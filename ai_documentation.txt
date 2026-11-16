@@ -1,0 +1,3 @@
+Write more formally later
+
+- Used AI to help with the retrieval of player career data from Tennis Abstract and to troubleshoot the profile download. I keep running into issues.
