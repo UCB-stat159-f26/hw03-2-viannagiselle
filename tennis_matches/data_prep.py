@@ -66,24 +66,17 @@ def download_career_js(player_id):
         text = file.read()
     return text
 
-def get_player_birth_date(player_id, is_womens):
-    if is_womens:
-        page = "wplayer-classic.cgi"
-    else:
-        page = "player-classic.cgi"
-
-    url = f"https://www.tennisabstract.com/cgi-bin/{page}?p={player_id}"
+def get_player_birth_date(player_id):
+    url = f"https://www.tennisabstract.com/cgi-bin/player.cgi?p={player_id}"
     filename = f"{player_id}Profile.html"
     urlretrieve(url, filename)
-
     with open(filename, "r") as file:
         profile = file.read()
 
-    age_start = profile.find("Age:")
-    date_start = profile.find("(", age_start) + 1
-    date_end = profile.find(")", date_start)
-    birth_date = profile[date_start:date_end]
-    return pd.to_datetime(birth_date, format="%d-%b-%Y")
+    start = profile.find("var dob = ") + len("var dob = ")
+    end = profile.find(";", start)
+    birth_date = profile[start:end]
+    return pd.to_datetime(birth_date, format="%Y%m%d")
 
 def get_career_data(player_name):
     player_id = make_player_id(player_name)
@@ -91,9 +84,5 @@ def get_career_data(player_name):
     matches = extract_matches(text)
     if len(matches) == 0:
         raise ValueError(f"No matches found for {player_name}.")
-    first_value = matches[0][16]
-    is_womens = False
-    if len(first_value) == 8 and first_value.isdigit():
-        is_womens = True
-    birth_date = get_player_birth_date(player_id, is_womens)
+    birth_date = get_player_birth_date(player_id)
     return make_match_dataframe(matches, birth_date)
